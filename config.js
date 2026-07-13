@@ -25,12 +25,12 @@ const CONFIG = {
     // Buat project baru di https://console.firebase.google.com
     // Copy config dari Project Settings → Web App
     firebase: {
-        apiKey:            "AIzaSyAnnCmMT3vV-7Qx9HR3ww1sZ7h_MVh6geo",
-        authDomain:        "pos-warung-salem.firebaseapp.com",
-        projectId:         "pos-warung-salem",
-        storageBucket:     "pos-warung-salem.firebasestorage.app",
-        messagingSenderId: "85046866660",
-        appId:             "1:85046866660:web:39960723ef60b288db72f1"
+        apiKey:            "AIzaSyDogXSXDHNEe10Y0o1J_62D6vjuDm9Yhws",
+        authDomain:        "pos-sulthan-buphone.firebaseapp.com",
+        projectId:         "pos-sulthan-buphone",
+        storageBucket:     "pos-sulthan-buphone.firebasestorage.app",
+        messagingSenderId: "1001698740050",
+        appId:             "1:1001698740050:web:70127a5e45223a31dddc8b"
     },
 
     // ─── Receipt Settings ───
@@ -40,11 +40,11 @@ const CONFIG = {
     },
 
     // ─── Admin Default ───
-    // Buat user admin di Firebase Console → Authentication → Users
-    // Email & password ini cuma untuk preview, buat asli di Firebase Console
+    // Login pakai user yang dibuat di Firebase Console → Authentication → Users
+    // JANGAN taruh password asli di sini (repo publik). Hint email aja.
     adminHint: {
-        email: "admin@tokodemo.com",
-        password: "demo1234"
+        email: "admin@sulthanbuphone.com",
+        password: ""
     }
 };
 
