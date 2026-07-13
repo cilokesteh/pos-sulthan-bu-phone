@@ -2,7 +2,7 @@
   "name": "POS Sulthan BU Phone",
   "short_name": "POS Sulthan",
   "description": "Sistem kasir Sulthan BU Phone - Rajanya Jual Beli HP Semarang",
-  "start_url": "./index.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
