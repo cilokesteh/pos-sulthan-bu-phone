@@ -9,13 +9,13 @@
 const CONFIG = {
 
     // ─── Store Info ───
-    storeName:    "Sulthan BU Phone",             // Tampil di header & struk
+    storeName:    "SULTHAN SHOP BU PHONE",             // Tampil di header & struk
     storeJargon:  "Rajanya Jual Beli HP Semarang", // Tampil di struk (italic)
     storeAddress: "Jl. Syuhada Raya No. 32, Tlogosari Kulon, Pedurungan, Semarang",
     storeHours:   "Buka 24 Jam Non-Stop",
     storeWA:      "0815-8585-7577",
     storeIG:      "@sulthanbuphone",
-    storeWebsite: "sulthan-phone-semarang.pages.dev",
+    storeWebsite: "sulthanbuphone.we.id",
 
     // ─── Theme ───
     // Warna utama: 'emerald', 'blue', 'purple', 'orange', 'rose', 'cyan', 'amber', 'magenta', 'sulthan'
