@@ -905,7 +905,7 @@
             html2pdf().set(opt).from(tmp).save();
         }
 
-        function sendReceiptToWA() {
+        async function sendReceiptToWA() {
             const t = window._lastReceiptData;
             if (!t) return alert('Data struk tidak tersedia.');
 
@@ -915,37 +915,71 @@
             else if (wa.startsWith('8')) wa = '62' + wa;
             else if (!wa.startsWith('62')) wa = '62' + wa;
 
-            // Build date/time
-            const ts = (t.createdAt && typeof t.createdAt === 'number') ? new Date(t.createdAt) :
-                       (t.timestamp && t.timestamp?.toDate) ? new Date(t.timestamp.toDate()) : new Date();
-            const dd = String(ts.getDate()).padStart(2, '0');
-            const MM = String(ts.getMonth() + 1).padStart(2, '0');
-            const yy = String(ts.getFullYear()).slice(-2);
-            const timeStr = ts.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-            const dateStr = `${dd}/${MM}/${yy}`;
-            const seq = String(t.receiptSeq || 1).padStart(6, '0');
-            const receiptNo = `POS-${dd}${MM}${yy}-${seq}`;
-            const methodLabel = t.method === 'cash' ? 'Cash' : t.method === 'qris' ? 'QRIS' : 'Transfer';
-
-            // Build item lines
-            let itemLines = '';
-            t.items.forEach(item => {
-                itemLines += `${item.name} x${item.qty} = Rp${item.subtotal.toLocaleString('id-ID')}\n`;
-                if (item.imei) {
-                    itemLines += `  IMEI: ${item.imei}\n`;
-                }
-            });
-
-            // Cash detail
-            let cashLines = '';
-            if (t.method === 'cash') {
-                cashLines = `Tunai: Rp${t.cash.toLocaleString('id-ID')}\nKembali: Rp${t.change.toLocaleString('id-ID')}\n`;
+            // Generate PDF terlebih dahulu
+            const element = document.getElementById('receipt-content');
+            const w = CONFIG.receipt.width || 80;
+            let tmp = document.getElementById('receipt-pdf-tmp');
+            if (!tmp) {
+                tmp = document.createElement('div');
+                tmp.id = 'receipt-pdf-tmp';
+                tmp.style.cssText = 'position:fixed;left:-9999px;top:0;width:320px;background:white;color:black;padding:8px;font-family:Courier New,monospace;font-size:13px;line-height:1.2;z-index:-1;';
+                document.body.appendChild(tmp);
             }
+            tmp.innerHTML = element.innerHTML;
 
-            const msg = `*${CONFIG.storeName.toUpperCase()}*\n_"${CONFIG.storeJargon}"_\n\n${dateStr} ${timeStr}\nNo: ${receiptNo}\n${'─'.repeat(20)}\nCustomer: ${t.customerName || 'Walk-in'}\nKasir: ${t.kasirName || t.createdBy || 'admin'}\n${'─'.repeat(20)}\n${itemLines}${'─'.repeat(20)}\n*TOTAL: Rp${t.total.toLocaleString('id-ID')}*\nMetode: ${methodLabel}\n${cashLines}${'─'.repeat(20)}\nTerima Kasih 🙏\n\n${CONFIG.storeAddress}\n${CONFIG.storeHours}\nWA: ${CONFIG.storeWA}\nIG: ${CONFIG.storeIG}\n${CONFIG.storeWebsite}`;
+            const opt = {
+                margin: 0,
+                filename: `${window._lastReceiptNo || 'receipt'}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: [w, 200] }
+            };
 
-            const url = `https://wa.me/${wa}?text=${encodeURIComponent(msg)}`;
-            window.open(url, '_blank');
+            try {
+                // Generate PDF as blob
+                const pdfBlob = await html2pdf().set(opt).from(tmp).outputPdf('blob');
+                const pdfFile = new File([pdfBlob], `${window._lastReceiptNo || 'receipt'}.pdf`, { type: 'application/pdf' });
+
+                // Coba kirim via Web Share API (support file sharing di mobile)
+                if (navigator.share && navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+                    await navigator.share({
+                        files: [pdfFile],
+                        title: `Struk ${window._lastReceiptNo || 'receipt'}`,
+                    });
+                } else {
+                    // Fallback: kirim via wa.me text
+                    const ts = (t.createdAt && typeof t.createdAt === 'number') ? new Date(t.createdAt) :
+                               (t.timestamp && t.timestamp?.toDate) ? new Date(t.timestamp.toDate()) : new Date();
+                    const dd = String(ts.getDate()).padStart(2, '0');
+                    const MM = String(ts.getMonth() + 1).padStart(2, '0');
+                    const yy = String(ts.getFullYear()).slice(-2);
+                    const timeStr = ts.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                    const dateStr = `${dd}/${MM}/${yy}`;
+                    const seq = String(t.receiptSeq || 1).padStart(6, '0');
+                    const receiptNo = `POS-${dd}${MM}${yy}-${seq}`;
+                    const methodLabel = t.method === 'cash' ? 'Cash' : t.method === 'qris' ? 'QRIS' : 'Transfer';
+
+                    let itemLines = '';
+                    t.items.forEach(item => {
+                        itemLines += `${item.name} x${item.qty} = Rp${item.subtotal.toLocaleString('id-ID')}\n`;
+                        if (item.imei) itemLines += `  IMEI: ${item.imei}\n`;
+                    });
+
+                    let cashLines = '';
+                    if (t.method === 'cash') {
+                        cashLines = `Tunai: Rp${t.cash.toLocaleString('id-ID')}\nKembali: Rp${t.change.toLocaleString('id-ID')}\n`;
+                    }
+
+                    const msg = `*${CONFIG.storeName.toUpperCase()}*\n_"${CONFIG.storeJargon}"_\n\n${dateStr} ${timeStr}\nNo: ${receiptNo}\n${'─'.repeat(20)}\nCustomer: ${t.customerName || 'Walk-in'}\nKasir: ${t.kasirName || t.createdBy || 'admin'}\n${'─'.repeat(20)}\n${itemLines}${'─'.repeat(20)}\n*TOTAL: Rp${t.total.toLocaleString('id-ID')}*\nMetode: ${methodLabel}\n${cashLines}${'─'.repeat(20)}\nTerima Kasih 🙏\n\n${CONFIG.storeAddress}\n${CONFIG.storeHours}\nWA: ${CONFIG.storeWA}\nIG: ${CONFIG.storeIG}\n${CONFIG.storeWebsite}`;
+
+                    const url = `https://wa.me/${wa}?text=${encodeURIComponent(msg)}`;
+                    window.open(url, '_blank');
+                }
+            } catch (e) {
+                // Fallback: kirim teks biasa kalo PDF gagal
+                const url = `https://wa.me/${wa}?text=${encodeURIComponent('Struk: ' + window._lastReceiptNo)}`;
+                window.open(url, '_blank');
+            }
         }
 
         async function loadTodayStats() {
