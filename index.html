@@ -143,17 +143,22 @@
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="text-sm text-zinc-400">Harga (Rp)</label>
+                        <label class="text-sm text-zinc-400">Harga Jual (Rp)</label>
                         <input type="number" id="product-price" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 mt-1">
                     </div>
+                    <div>
+                        <label class="text-sm text-zinc-400">Harga Beli (Modal) (Rp)</label>
+                        <input type="number" id="product-cost" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 mt-1">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="text-sm text-zinc-400">Stok</label>
                         <input type="number" id="product-stock" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 mt-1">
                     </div>
-                </div>
-                <div>
-                    <label class="text-sm text-zinc-400">Kategori</label>
-                    <select id="product-category" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 mt-1">
+                    <div>
+                        <label class="text-sm text-zinc-400">Kategori</label>
+                        <select id="product-category" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 mt-1">
                         <option value="Handphone">Handphone</option>
                         <option value="Aksesoris">Aksesoris</option>
                         <option value="Lainnya">Lainnya</option>
@@ -514,11 +519,13 @@
             if (product) {
                 document.getElementById('product-name').value = product.name;
                 document.getElementById('product-price').value = product.price;
+                document.getElementById('product-cost').value = product.costPrice || 0;
                 document.getElementById('product-stock').value = product.stock;
                 document.getElementById('product-category').value = product.category;
             } else {
                 document.getElementById('product-name').value = '';
                 document.getElementById('product-price').value = '';
+                document.getElementById('product-cost').value = '';
                 document.getElementById('product-stock').value = '';
                 document.getElementById('product-category').value = 'Handphone';
             }
@@ -532,12 +539,13 @@
         function saveProduct() {
             const name = document.getElementById('product-name').value.trim();
             const price = parseInt(document.getElementById('product-price').value);
+            const costPrice = parseInt(document.getElementById('product-cost').value) || 0;
             const stock = parseInt(document.getElementById('product-stock').value);
             const category = document.getElementById('product-category').value;
 
             if (!name || isNaN(price) || isNaN(stock)) return alert('Lengkapi data');
 
-            const data = { name, price, stock, category };
+            const data = { name, price, costPrice, stock, category };
 
             if (editingProductId) {
                 db.collection('demo-products').doc(editingProductId).update(data);
@@ -686,6 +694,7 @@
                         price: item.price,
                         qty: item.qty,
                         subtotal: item.price * item.qty,
+                        costPrice: item.costPrice || 0,
                         imei: item.imei || '',
                         category: item.category || ''
                     })),
