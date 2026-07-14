@@ -15,7 +15,7 @@ const CONFIG = {
     storeHours:   "Buka 24 Jam Non-Stop",
     storeWA:      "0815-8585-7577",
     storeIG:      "@sulthanbuphone",
-    storeWebsite: "sulthanbuphone.we.id",
+    storeWebsite: "sulthanbuphone.web.id",
 
     // ─── Theme ───
     // Warna utama: 'emerald', 'blue', 'purple', 'orange', 'rose', 'cyan', 'amber', 'magenta', 'sulthan'
