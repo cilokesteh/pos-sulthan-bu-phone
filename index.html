@@ -10,9 +10,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="POS Sulthan">
-    <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="pragma" content="no-cache">
-    <script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=8').catch(()=>{}));}</script>
+    <script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}</script>
     <title>POS</title>
     <script src="config.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -46,7 +44,6 @@
                         <i class="fa-solid fa-sign-out-alt"></i>
                         <span>Logout</span>
                     </button>
-                    <span class="text-[10px] text-zinc-600 select-none">v8</span>
                 </div>
             </div>
         </div>
@@ -878,12 +875,11 @@
                     <title>Print ${receiptNo}</title>
                     <style>
                         @page { margin: 0; size: ${w}mm auto; }
-                        body { margin: 0; padding: 0; font-family: 'Courier New', monospace; color: #000; display:flex;justify-content:center; }
-                        #pwrap { width:${w}mm; padding:4mm 2mm; box-sizing:border-box; }
+                        body { margin: 0; padding: 8px; font-family: 'Courier New', monospace; color: #000; }
                         * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                     </style>
                 </head>
-                <body><div id="pwrap">${element.innerHTML}</div></body>
+                <body>${element.innerHTML}</body>
                 </html>
             `);
             printWin.document.close();
@@ -896,31 +892,27 @@
 
         function downloadPdf() {
             const element = document.getElementById('receipt-content');
-            const w = CONFIG.receipt.width || 80; // mm
+            const w = CONFIG.receipt.width || 80;
 
-            // Capture at 2x so text is crisp on any device.
-            // Then compute PDF height from the actual rendered aspect ratio
-            // so the content is never stretched or clipped.
-            html2canvas(element, {
-                scale: 2,
-                backgroundColor: '#ffffff',
-                scrollX: 0,
-                scrollY: 0,
-                windowWidth: document.documentElement.offsetWidth
-            }).then(canvas => {
-                const imgData = canvas.toDataURL('image/jpeg', 0.98);
-                // maintain exact aspect ratio: PDF height = (px ratio) × page width
-                const pdfHeight = (canvas.height / canvas.width) * w;
-
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF({
-                    unit: 'mm',
-                    format: [w, pdfHeight],
-                    orientation: 'portrait'
-                });
-                pdf.addImage(imgData, 'JPEG', 0, 0, w, pdfHeight);
-                pdf.save(`${window._lastReceiptNo || 'receipt'}.pdf`);
-            });
+            // The receipt modal is OPEN and visible when this runs (the user is
+            // looking at the receipt), so `receipt-content` is on-screen with real
+            // dimensions. Capture it directly. A previous off-screen clone
+            // (left:-9999px) produced a blank PDF because html2canvas cannot
+            // reliably rasterise elements far outside the viewport.
+            const opt = {
+                margin: 0,
+                filename: `${window._lastReceiptNo || 'receipt'}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: {
+                    scale: 2,
+                    backgroundColor: '#ffffff',
+                    scrollX: 0,
+                    scrollY: 0,
+                    windowWidth: document.documentElement.offsetWidth
+                },
+                jsPDF: { unit: 'mm', format: [w, 200] }
+            };
+            html2pdf().set(opt).from(element).save();
         }
 
         async function sendReceiptToWA() {
@@ -938,20 +930,23 @@
             const element = document.getElementById('receipt-content');
             const w = CONFIG.receipt.width || 80;
 
-            // Generate PDF with auto aspect ratio
-            html2canvas(element, {
-                scale: 2,
-                backgroundColor: '#ffffff',
-                scrollX: 0,
-                scrollY: 0,
-                windowWidth: document.documentElement.offsetWidth
-            }).then(async (canvas) => {
-                const imgData = canvas.toDataURL('image/jpeg', 0.98);
-                const pdfHeight = (canvas.height / canvas.width) * w;
-                const { jsPDF } = window.jspdf;
-                const pdfDoc = new jsPDF({ unit: 'mm', format: [w, pdfHeight], orientation: 'portrait' });
-                pdfDoc.addImage(imgData, 'JPEG', 0, 0, w, pdfHeight);
-                const pdfBlob = pdfDoc.output('blob');
+            const opt = {
+                margin: 0,
+                filename: `${window._lastReceiptNo || 'receipt'}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: {
+                    scale: 2,
+                    backgroundColor: '#ffffff',
+                    scrollX: 0,
+                    scrollY: 0,
+                    windowWidth: document.documentElement.offsetWidth
+                },
+                jsPDF: { unit: 'mm', format: [w, 200] }
+            };
+
+            try {
+                // Generate PDF as blob
+                const pdfBlob = await html2pdf().set(opt).from(element).outputPdf('blob');
                 const pdfFile = new File([pdfBlob], `${window._lastReceiptNo || 'receipt'}.pdf`, { type: 'application/pdf' });
 
                 // Coba kirim via Web Share API (support file sharing di mobile)
@@ -989,13 +984,11 @@
                     const url = `https://wa.me/${wa}?text=${encodeURIComponent(msg)}`;
                     window.open(url, '_blank');
                 }
-                }
-            }).catch(e => {
-                console.error('PDF generation failed, sending text fallback', e);
+            } catch (e) {
                 // Fallback: kirim teks biasa kalo PDF gagal
                 const url = `https://wa.me/${wa}?text=${encodeURIComponent('Struk: ' + window._lastReceiptNo)}`;
                 window.open(url, '_blank');
-            });
+            }
         }
 
         async function loadTodayStats() {
