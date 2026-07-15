@@ -18,8 +18,8 @@ const CONFIG = {
     storeWebsite: "sulthanbuphone.web.id",
 
     // ─── Theme ───
-    // Warna utama: 'emerald', 'blue', 'purple', 'orange', 'rose', 'cyan', 'amber', 'magenta', 'sulthan'
-    theme: 'sulthan',
+    // Warna utama: 'emerald', 'blue', 'purple', 'orange', 'rose', 'cyan', 'amber', 'magenta', 'gold', 'sulthan'
+    theme: 'gold',
 
     // ─── Firebase Config ───
     // Buat project baru di https://console.firebase.google.com
@@ -58,6 +58,8 @@ const THEMES = {
     cyan:    { primary: 'cyan',    hex: '#06b6d4', bg: '#0e7490' },
     amber:   { primary: 'amber',   hex: '#f59e0b', bg: '#78350f' },
     magenta: { primary: 'magenta', hex: '#e11d8f', bg: '#831843' },
+    // Tema Gold — premium untuk SULTHAN SHOP BU PHONE
+    gold:    { primary: 'emerald', hex: '#D4AF37', bg: '#4a3000', gold: '#FFD700' },
     // Tema custom Sulthan BU Phone — merah + emas + hitam (match website)
     // primary='emerald' biar nama class dinamis (bg-emerald-600 dll) resolve ke utility asli,
     // lalu di-override jadi merah+emas via CSS injection di index.html & reports.html
