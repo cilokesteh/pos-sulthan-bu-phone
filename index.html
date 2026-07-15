@@ -10,7 +10,9 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="POS Sulthan">
-    <script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}</script>
+    <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="pragma" content="no-cache">
+    <script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=8').catch(()=>{}));}</script>
     <title>POS</title>
     <script src="config.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -44,6 +46,7 @@
                         <i class="fa-solid fa-sign-out-alt"></i>
                         <span>Logout</span>
                     </button>
+                    <span class="text-[10px] text-zinc-600 select-none">v8</span>
                 </div>
             </div>
         </div>
