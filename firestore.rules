@@ -1,9 +1,30 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Hanya user yang sudah login yang bisa baca/tulis
+
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'admin@sulthanbuphone.com';
+    }
+
+    match /products/{id} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    match /transactions/{id} {
+      allow read: if isAdmin();
+      allow create: if request.auth != null
+        && request.resource.data.createdBy == request.auth.token.email
+        && request.resource.data.timestamp == request.time;
+      allow update, delete: if isAdmin();
+    }
+
+    match /customers/{id} {
+      allow read, write: if isAdmin();
+    }
+
     match /{document=**} {
-      allow read, write: if request.auth != null;
+      allow read, write: if false;
     }
   }
 }

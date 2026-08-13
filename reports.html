@@ -239,6 +239,11 @@
         let currentDate = new Date();
         let reprintData = null;
 
+        // Escape HTML — pencegahan stored XSS dari data Firestore
+        function esc(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
+
         // ─── Tab Switching ───
         function switchTab(tab) {
             currentTab = tab;
