@@ -1,5 +1,5 @@
 // Service Worker — Sulthan BU Phone POS
-const CACHE = 'sulthan-pos-v17';
+const CACHE = 'sulthan-pos-v18';
 const ASSETS = [
   './',
   './login',
@@ -31,7 +31,8 @@ self.addEventListener('activate', (e) => {
 // Fetch: skip Firebase/API, network-first untuk HTML, cache-first untuk asset statis
 self.addEventListener('fetch', (e) => {
   const url = e.request.url;
-  if (url.includes('firestore') || url.includes('googleapis') || url.includes('firebase') || url.includes('gstatic')) {
+  if (url.includes('firestore') || url.includes('googleapis') || url.includes('firebase') || url.includes('gstatic') ||
+      url.includes('cdnjs') || url.includes('cdn.tailwindcss') || url.includes('cdn.jsdelivr')) {
     return;
   }
 
