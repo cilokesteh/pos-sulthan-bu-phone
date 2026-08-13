@@ -1,5 +1,5 @@
 // Service Worker — Sulthan BU Phone POS
-const CACHE = 'sulthan-pos-v19';
+const CACHE = 'sulthan-pos-v20';
 const ASSETS = [
   './',
   './login',
