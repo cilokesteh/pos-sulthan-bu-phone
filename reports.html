@@ -14,9 +14,10 @@
     <title>Laporan - POS</title>
     <script src="config.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha384-t1nt8BQoYMLFN5p42tRAtuAAFQaCQODekUVeKKZrEnEyp4H2R0RHFz0KWpmj7i8g" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha384-Yv5O+t3uE3hunW8uyrbpPW3iw6/5/Y7HitWJBLgqfMoA36NogMmy+8wWZMpn3HWc" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" integrity="sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw" crossorigin="anonymous"></script>
 </head>
 <body class="bg-zinc-950 text-zinc-200 min-h-screen">
     <div class="max-w-6xl mx-auto px-6 py-8">
@@ -440,7 +441,7 @@
                 summary.classList.remove('hidden');
             } catch (err) {
                 console.error(err);
-                loading.innerHTML = `<p class="text-red-400 text-center py-8">Error: ${err.message}</p>`;
+                loading.innerHTML = `<p class="text-red-400 text-center py-8">Error: ${esc(err.message)}</p>`;
             }
         }
 
@@ -484,7 +485,7 @@
                         tr.className = i % 2 === 0 ? 'bg-zinc-900' : 'bg-zinc-800/30';
                         tr.innerHTML = `
                             <td class="px-4 py-3 text-zinc-400">${i + 1}</td>
-                            <td class="px-4 py-3 font-medium">${item.name}</td>
+                            <td class="px-4 py-3 font-medium">${esc(item.name)}</td>
                             <td class="px-4 py-3 text-center"><span class="px-2 py-0.5 rounded text-xs" style="background: ${theme.hex}33; color: ${theme.hex}">${item.qty}</span></td>
                             <td class="px-4 py-3 text-right font-semibold">Rp ${item.revenue.toLocaleString('id-ID')}</td>
                         `;
@@ -496,7 +497,7 @@
                 content.classList.remove('hidden');
             } catch (err) {
                 console.error(err);
-                loading.innerHTML = `<p class="text-red-400 text-center py-8">Error: ${err.message}</p>`;
+                loading.innerHTML = `<p class="text-red-400 text-center py-8">Error: ${esc(err.message)}</p>`;
             }
         }
 
@@ -623,7 +624,7 @@
                 content.classList.remove('hidden');
             } catch (err) {
                 console.error(err);
-                loading.innerHTML = `<p class="text-red-400 text-center py-8">Error: ${err.message}</p>`;
+                loading.innerHTML = `<p class="text-red-400 text-center py-8">Error: ${esc(err.message)}</p>`;
             }
         }
 
@@ -650,8 +651,8 @@
                 html += `<div style="width:100%;text-align:center;max-width:${CONFIG.receipt.width}mm;margin:0 auto;">`;
                 // Header
                 html += `<div style="margin-bottom:6px;">`;
-                html += `<div style="font-size:16px;font-weight:bold;letter-spacing:1px;">${CONFIG.storeName.toUpperCase()}</div>`;
-                html += `<div style="font-size:10px;font-style:italic;margin:2px 0;">"${CONFIG.storeJargon}"</div>`;
+                html += `<div style="font-size:16px;font-weight:bold;letter-spacing:1px;">${esc(CONFIG.storeName.toUpperCase())}</div>`;
+                html += `<div style="font-size:10px;font-style:italic;margin:2px 0;">"${esc(CONFIG.storeJargon)}"</div>`;
                 html += `<div style="font-size:10px;">${dateStr} ${timeStr}</div>`;
                 html += `<div style="font-size:10px;margin-top:2px;border:1px solid #ccc;display:inline-block;padding:0 6px;">${receiptNo}</div>`;
                 html += `</div>`;
@@ -665,11 +666,11 @@
                 const kasirName = d.kasirName || d.createdBy || 'admin';
                 html += `<div style="display:flex;justify-content:space-between;font-size:11px;">`;
                 html += `<span>Customer</span>`;
-                html += `<span>${custName}</span>`;
+                html += `<span>${esc(custName)}</span>`;
                 html += `</div>`;
                 html += `<div style="display:flex;justify-content:space-between;font-size:11px;">`;
                 html += `<span>Kasir</span>`;
-                html += `<span>${kasirName}</span>`;
+                html += `<span>${esc(kasirName)}</span>`;
                 html += `</div>`;
                 // Items
                 html += `<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px;">`;
@@ -678,7 +679,7 @@
                 html += `</div>`;
                 (d.items || []).forEach(item => {
                     html += `<div style="display:flex;justify-content:space-between;font-size:11px;">`;
-                    html += `<span>${item.name} x${item.qty}</span>`;
+                    html += `<span>${esc(item.name)} x${item.qty}</span>`;
                     html += `<span>${(item.subtotal || 0).toLocaleString('id-ID')}</span>`;
                     html += `</div>`;
                 });
@@ -712,10 +713,10 @@
                         html += `<div style="display:flex;justify-content:space-between;font-size:11px;"><span>Transfer</span><span>${d.split.transfer.toLocaleString('id-ID')}</span></div>`;
                     }
                     if (d.split.cardType) {
-                        html += `<div style="display:flex;justify-content:space-between;font-size:11px;"><span>Kartu</span><span>${d.split.cardType.toUpperCase()}</span></div>`;
+                        html += `<div style="display:flex;justify-content:space-between;font-size:11px;"><span>Kartu</span><span>${esc(d.split.cardType.toUpperCase())}</span></div>`;
                     }
                     if (d.split.cardNumber) {
-                        html += `<div style="display:flex;justify-content:space-between;font-size:11px;"><span>No Kartu</span><span>${d.split.cardNumber}</span></div>`;
+                        html += `<div style="display:flex;justify-content:space-between;font-size:11px;"><span>No Kartu</span><span>${esc(d.split.cardNumber)}</span></div>`;
                     }
                 }
                 // Footer

@@ -22,7 +22,7 @@ Sistem Point of Sale (kasir) untuk **Sulthan BU Phone** — Rajanya Jual Beli HP
 
 ## Setup (3 Langkah)
 1. **Edit `config.js`** — isi info toko + Firebase config
-2. **Setup Firebase** — buat project, enable Email/Password auth, buat Firestore + rules (`allow read, write: if request.auth != null`)
+2. **Setup Firebase** — buat project, enable Email/Password auth, lalu deploy `firestore.rules` dari repo. Jangan pakai rule generik `request.auth != null`; rules repo membatasi seluruh `demo-*` collection ke admin Sulthan.
 3. **Deploy** — Cloudflare Pages / Vercel (static site, no build)
 
 ## Deploy

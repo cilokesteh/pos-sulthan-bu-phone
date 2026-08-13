@@ -411,8 +411,8 @@
                 div.className = 'flex justify-between items-center p-3 bg-zinc-950 rounded-2xl border border-zinc-800 hover:border-[#D4AF37]';
                 div.innerHTML = `
                     <div class="flex-1 cursor-pointer" onclick="addToCart('${product.id}')">
-                        <div class="font-medium">${product.name}</div>
-                        <div class="text-xs text-zinc-400">${product.category} • Stok: <span class="${product.stock >= 5 ? 'text-[#FFD700]' : 'text-red-400'}">${product.stock}</span></div>
+                        <div class="font-medium">${esc(product.name)}</div>
+                        <div class="text-xs text-zinc-400">${esc(product.category)} • Stok: <span class="${product.stock >= 5 ? 'text-[#FFD700]' : 'text-red-400'}">${product.stock}</span></div>
                         <div class="font-semibold text-[#FFD700]">Rp ${product.price.toLocaleString('id-ID')}</div>
                     </div>
                     <div class="flex gap-2 ml-2">
@@ -488,7 +488,7 @@
                 div.innerHTML = `
                     <div class="flex justify-between items-center">
                         <div>
-                            <div class="font-medium">${item.name}</div>
+                            <div class="font-medium">${esc(item.name)}</div>
                             <div class="text-xs text-zinc-400">Rp ${item.price.toLocaleString('id-ID')} × ${item.qty}</div>
                         </div>
                         <div class="flex items-center gap-x-3">
@@ -793,8 +793,8 @@
 
             // Header
             html += `<div style="margin-bottom:6px;">`;
-            html += `<div style="font-size:16px;font-weight:bold;letter-spacing:1px;">${CONFIG.storeName.toUpperCase()}</div>`;
-            html += `<div style="font-size:10px;font-style:italic;margin:2px 0;">"${CONFIG.storeJargon}"</div>`;
+            html += `<div style="font-size:16px;font-weight:bold;letter-spacing:1px;">${esc(CONFIG.storeName.toUpperCase())}</div>`;
+            html += `<div style="font-size:10px;font-style:italic;margin:2px 0;">"${esc(CONFIG.storeJargon)}"</div>`;
             html += `<div style="font-size:10px;">${dateStr} ${timeStr}</div>`;
             html += `<div style="font-size:10px;margin-top:2px;border:1px solid #ccc;display:inline-block;padding:0 6px;">${receiptNo}</div>`;
             html += `</div>`;
@@ -806,11 +806,11 @@
             const kasirName = transaction.kasirName || transaction.createdBy || 'admin';
             html += `<div style="display:flex;justify-content:space-between;font-size:11px;margin-top:2px;">`;
             html += `<span>Customer</span>`;
-            html += `<span>${custName}</span>`;
+            html += `<span>${esc(custName)}</span>`;
             html += `</div>`;
             html += `<div style="display:flex;justify-content:space-between;font-size:11px;margin-top:1px;">`;
             html += `<span>Kasir</span>`;
-            html += `<span>${kasirName}</span>`;
+            html += `<span>${esc(kasirName)}</span>`;
             html += `</div>`;
             
             // Item header
@@ -821,11 +821,11 @@
             
             transaction.items.forEach(item => {
                 html += `<div style="display:flex;justify-content:space-between;font-size:11px;">`;
-                html += `<span>${item.name} x${item.qty}</span>`;
+                html += `<span>${esc(item.name)} x${item.qty}</span>`;
                 html += `<span>${item.subtotal.toLocaleString('id-ID')}</span>`;
                 html += `</div>`;
                 if (item.imei) {
-                    html += `<div style="font-size:9px;color:#666;padding-left:8px;">IMEI: ${item.imei}</div>`;
+                    html += `<div style="font-size:9px;color:#666;padding-left:8px;">IMEI: ${esc(item.imei)}</div>`;
                 }
             });
             
@@ -883,6 +883,7 @@
             const w = CONFIG.receipt.width || 80;
             
             const printWin = window.open('', '_blank', 'width=400,height=600');
+            if (!printWin) { alert('Popup print diblokir browser. Izinkan popup lalu coba lagi.'); return; }
             printWin.document.write(`
                 <!DOCTYPE html>
                 <html>
@@ -926,19 +927,29 @@
                 jsPDF: { unit: 'mm', format: [w, 200] }
             };
 
-            // Coba html2pdf capture dulu. Kalau blob < 1KB (blank), fallback ke text-based PDF.
-            html2pdf().set(opt).from(element).outputPdf('blob').then(blob => {
-                if (blob.size < 1000 && t) {
-                    // html2pdf blank — fallback ke text PDF biar tetep kebaca
-                    const doc = buildTextReceipt(t, w);
-                    if (doc) doc.save(`${window._lastReceiptNo || 'receipt'}.pdf`);
-                    else { html2pdf().set(opt).from(element).save(); } // fallback safenet
-                } else {
-                    html2pdf().set(opt).from(element).save();
+            // Primary: jsPDF text-based (works on all devices, no canvas dependency)
+            const doc = buildTextReceipt(t, w);
+            if (doc) {
+                try {
+                    const blob = doc.output('blob');
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${window._lastReceiptNo || 'receipt'}.pdf`;
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
+                    a.click();
+                    setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
+                } catch (_) {
+                    doc.save(`${window._lastReceiptNo || 'receipt'}.pdf`);
                 }
-            }).catch(() => {
-                // html2pdf error — coba text fallback
-                if (t) { const doc = buildTextReceipt(t, w); if (doc) doc.save(`${window._lastReceiptNo || 'receipt'}.pdf`); }
+                return;
+            }
+
+            // Fallback: html2pdf (desktop only, may fail in PWA)
+            if (typeof html2pdf === 'undefined') { alert('PDF library belum ready'); return; }
+            html2pdf().set(opt).from(element).save().catch(() => {
+                alert('Gagal download PDF. Coba gunakan Print.');
             });
         }
 
